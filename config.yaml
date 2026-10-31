@@ -1,0 +1,104 @@
+# Techburin Construct — Telegram avtopost sozlamalari
+# Shu fayldagi qiymatlarni o‘zgartirib, tizim xatti-harakatini boshqarasiz.
+# API kalitlari bu yerga YOZILMAYDI — ular GitHub Secrets'da turadi.
+
+company:
+  name: "Techburin Construct"
+  about: >-
+    Bored piling (burg‘ulangan qoziq), drilling and driven reinforced-concrete
+    piles (35x35 cm) for buildings, bridges and infrastructure in Uzbekistan.
+    Works with rented XCMG / SANY / Liebherr rigs and experienced operators.
+
+rubric:
+  name: "Claude maslahatlar"
+  direction: "Svay, poydevor va qurilish bo‘yicha amaliy maslahatlar"
+  audience:
+    - "Quruvchi kompaniyalar va pudratchilar"
+    - "Uy va obyekt egalari"
+    - "Loyihachi va konstruktorlar"
+    - "Geologlar"
+    - "Ko‘prik va yo‘l pudratchilari"
+  sources: |
+    1. Me’yorlar: O‘zbekiston ShNQ (qoziqli poydevorlar va grunt asoslari bo‘limlari), Rossiya SP «Свайные фундаменты» va «Основания зданий и сооружений».
+    2. Xalqaro tashkilotlar: Deep Foundations Institute (dfi.org), Federation of Piling Specialists (fps.org.uk).
+    3. Uskuna ishlab chiqaruvchilar: XCMG, SANY, Liebherr, BAUER – yangi texnologiyalar va ish usullari.
+    4. Rus va ingliz tilidagi qurilish portallari va poydevor bo‘yicha Telegram kanallar.
+    5. Mijozlar ko‘p beradigan savollar: narx nimaga bog‘liq, qaysi usul mos, geologiya nima uchun kerak, qancha vaqt ketadi.
+
+telegram:
+  channel: "@techburinconstruct"
+  admin_chat_id: 2041545383          # tasdiqlash xabarlari shu odamga keladi
+
+timezone: "Asia/Tashkent"
+
+schedule:
+  days: [mon, wed, fri]              # mon tue wed thu fri sat sun
+  time: "09:00"
+  generate_hours_before: 14          # post chiqishidan necha soat oldin qoralama tayyorlansin
+  late_publish_hours: 6              # tasdiq kechiksa, belgilangan vaqtdan keyin yana necha soat ichida chiqarish mumkin
+
+mode: approval                       # approval = har post avval adminga keladi | auto = nazoratdan o‘tsa o‘zi chiqadi
+
+models:
+  text: "gemini-3.6-flash"
+  text_fallbacks: ["gemini-3.5-flash", "gemini-flash-latest"]
+  image: "gemini-nano-banana-2.1"
+  image_fallbacks: ["gemini-3.1-flash-image", "gemini-3.1-flash-lite-image"]
+
+post:
+  tone: "Ekspert, lekin sodda tilda"
+  script: latin
+  body_min_chars: 500                # sarlavha + asosiy matn (chaqiriq va xeshteglarsiz)
+  body_max_chars: 750
+  caption_limit: 1024                # Telegram cheklovi, o‘zgartirmang
+  max_emoji: 4
+  hashtags: "#TechburinConstruct #svay #poydevor #qurilish"
+  cta: "Poydevor bo‘yicha savolingiz bormi? Bepul maslahat uchun yozing yoki qo‘ng‘iroq qiling."
+  phone: "+998 77 237 17 07"
+  site: "techburinconstruct.com"
+  contact: "@invenxfund"
+  # Asosiy stil namunasi (A variant)
+  style_example: |
+    🏗 Qo‘shni bino yonida svay qoqsa bo‘ladimi?
+
+    Shahar ichidagi ko‘p obyektlar yonma-yon turgan binolar orasida quriladi. Bunday joyda poydevor turini noto‘g‘ri tanlash qo‘shnilar bilan janjal va qimmat ta’mirga olib keladi.
+
+    Nimaga e’tibor berish kerak:
+    1. Qoqiladigan svay kuchli tebranish beradi. Eski yoki yaqin turgan binolarda yoriq paydo bo‘lishi mumkin.
+    2. Burg‘ulangan qoziq deyarli tebranishsiz o‘rnatiladi. Zich shahar sharoitida xavfsizroq yechim.
+    3. Ish boshlashdan oldin qo‘shni binolarning holatini rasmga olib, hujjatlashtiring. Keyin bahsli vaziyatda bu sizni himoya qiladi.
+
+    Qaysi usul mos kelishi geologiya va loyihaga bog‘liq.
+  # Ba’zan postni shunday hikoya bilan boshlash mumkin (C variant)
+  hook_example: |
+    Bir buyurtmachi bizga shunday murojaat qildi: «Obyektim eski uy bilan devor-devor. Svay qoqsak, qo‘shnining uyi yorilmaydimi?» 🤔
+
+quality:
+  max_rewrites: 2
+  on_fail: send_to_admin             # send_to_admin | skip
+  bans:
+    - "Aniq narxlar va chegirmalar"
+    - "Raqobatchi kompaniyalar nomi"
+    - "Manbasiz texnik raqamlar va me’yorlar"
+    - "Mijozlar nomi ruxsatsiz"
+    - "Siyosat va din"
+  extra_bans: ""
+
+image:
+  aspect_ratio: "1:1"
+  size_px: 1080
+  style: "Real foto ko‘rinishi: qurilish maydoni, burg‘ulash uskunalari"
+  brand_colors: "Sariq (#F2A900), to‘q grafit (#2B2F33), oq. Sariq faqat urg‘u sifatida: uskuna, kaska, chiziqlar."
+  text_on_image: false
+  logo_path: "assets/logo.png"       # fayl bo‘lmasa, logo qo‘yilmaydi
+  logo_width_ratio: 0.18
+  logo_position: bottom-right
+
+audio:
+  model: "eleven_v4"
+  fallback_model: "eleven_v3"
+  language_code: "uz"
+  voice_id: ""                       # bo‘sh bo‘lsa, akkauntdagi birinchi erkak ovozi olinadi
+  voice_gender: male
+  target_seconds: "30–45"
+  scope: "Asosiy maslahatning qisqa versiyasi"

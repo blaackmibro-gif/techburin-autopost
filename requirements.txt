@@ -1,0 +1,4 @@
+google-genai>=2.30
+requests>=2.31
+PyYAML>=6.0
+Pillow>=10.0
