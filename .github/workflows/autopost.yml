@@ -1,0 +1,60 @@
+name: Techburin avtopost
+
+on:
+  schedule:
+    # Har 30 daqiqada, Toshkent vaqti bilan 06:22 dan 22:52 gacha (UTC 01:22–17:52)
+    - cron: "22,52 1-17 * * *"
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "Nima qilinsin?"
+        type: choice
+        default: tick
+        options:
+          - tick
+          - yangi-post
+          - tekshirish
+          - ovozlarni-sinash
+
+permissions:
+  contents: write
+
+concurrency:
+  group: techburin-autopost
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Kutubxonalarni o‘rnatish
+        run: pip install -r requirements.txt
+
+      - name: Ishga tushirish
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+        run: python -m autopost "${{ github.event.inputs.command || 'tick' }}"
+
+      - name: Holatni saqlash
+        if: always()
+        run: |
+          git config user.name "techburin-autopost"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state/state.json
+          if git diff --cached --quiet; then
+            echo "Holat o‘zgarmadi"
+          else
+            git commit -m "holat yangilandi"
+            git pull --rebase --quiet || true
+            git push
+          fi
