@@ -4,6 +4,7 @@ from __future__ import annotations
 import html
 import json
 import logging
+import re
 
 from ..gemini import Gemini
 
@@ -34,6 +35,7 @@ TONE: {tone}.
 STRUCTURE of "title" + "body" (follow the style example closely):
 - "title": one line, starts with ONE fitting emoji, then a clear question or promise, max 70 characters.
 - "body": 1–2 sentences on the problem and why it matters, then 2–4 numbered points or short paragraphs with concrete advice, then one closing sentence.
+  Use real line breaks: a blank line between paragraphs, and every numbered point on its own line (exactly like the style example).
 - Sometimes (not every time) you may open the body with a common client question in « » quotes, like the hook example. Never invent a specific client, company, project or place.
 - title + body together: {min_chars}–{max_chars} characters.
 - At most 1 extra emoji inside the body (plus the one in the title).
@@ -140,9 +142,16 @@ def rewrite(gemini: Gemini, cfg: dict, post: dict, notes: str, issues: list[str]
     return finalize(cfg, data)
 
 
+def tidy_body(body: str) -> str:
+    """Model raqamlangan bandlarni bitta qatorga yopishtirib yuborsa, har birini alohida qatorga o‘tkazadi."""
+    b = body.replace("\r\n", "\n").strip()
+    b = re.sub(r"(?<=[.:!?»])[ \t]+(?=[1-9]\.\s)", "\n", b)  # "...: 1. ... 2. ..." → alohida qatorlar
+    return re.sub(r"\n{3,}", "\n\n", b)
+
+
 def finalize(cfg: dict, data: dict) -> dict:
     title = " ".join(data["title"].split())
-    body = data["body"].strip()
+    body = tidy_body(data["body"])
     data["title"], data["body"] = title, body
     data["caption"] = build_caption(cfg, title, body)
     return data
