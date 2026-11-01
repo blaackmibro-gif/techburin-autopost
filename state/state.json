@@ -1,10 +1,10 @@
 {
-  "last_update_id": 0,
+  "last_update_id": 191858304,
   "drafts": {
     "2026-11-02T09:00": {
       "slot": "2026-11-02T09:00",
       "created": "2026-11-01T01:53:58+00:00",
-      "status": "pending",
+      "status": "published",
       "topic": {
         "title_uz": "Cho‘kuvchan gruntda qaysi qoziq afzal: burg‘ulashmi yoki urish?",
         "angle": "Advises how to select between bored piles and 35x35 driven piles on collapsible loess soils according to ShNQ standards."
@@ -31,10 +31,21 @@
         "photo": 10,
         "voice": 11,
         "control": 12
-      }
+      },
+      "published_msgs": {
+        "photo": 69,
+        "voice": 70
+      },
+      "post_link": "https://t.me/techburinconstruct/69"
     }
   },
-  "history": [],
+  "history": [
+    {
+      "date": "2026-11-01",
+      "title": "🧪 Cho‘kuvchan gruntda qaysi svay ma’qul: qoqishmi yoki burg‘ulash?",
+      "slot": "2026-11-02T09:00"
+    }
+  ],
   "force_generate": false,
   "gen_errors": {}
 }
