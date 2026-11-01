@@ -65,7 +65,8 @@ class Gemini:
                     errors.append(f"{model}: {msg[:300]}")
                     if attempt == 0 and any(code in msg for code in _TRANSIENT):
                         log.warning("%s: %s vaqtincha xato, qayta urinish: %s", what, model, msg[:200])
-                        time.sleep(8)
+                        # Bepul tarifda daqiqalik limit tez to‘ladi — 429 da uzoqroq kutamiz
+                        time.sleep(35 if ("429" in msg or "RESOURCE_EXHAUSTED" in msg) else 8)
                         continue
                     log.warning("%s: %s ishlamadi: %s", what, model, msg[:300])
                     break
