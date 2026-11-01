@@ -1,0 +1,245 @@
+"""Agentlarni bir zanjirga bog‘lash va jadval bo‘yicha boshqarish."""
+from __future__ import annotations
+
+import html
+import logging
+from datetime import timedelta
+
+from .agents import audio as audio_agent
+from .agents import image as image_agent
+from .agents import publisher, quality, topic, writer
+from .state import next_slot, now_local, parse_slot, slot_id, utc_now_iso
+
+log = logging.getLogger(__name__)
+
+PUBLISH_EARLY_MIN = 10       # post vaqtidan necha daqiqa oldin chiqarishga ruxsat
+MAX_GEN_ERRORS = 3
+MAX_REGENS = 3
+DONE = ("published", "rejected", "expired")
+
+
+class Services:
+    """Tashqi API mijozlari (testda soxtalari bilan almashtiriladi)."""
+
+    def __init__(self, tg, gemini, eleven):
+        self.tg, self.gemini, self.eleven = tg, gemini, eleven
+
+
+# ---------------------------------------------------------------- generation
+def previous_titles(state: dict) -> list[str]:
+    titles = [h["title"] for h in state["history"]]
+    titles += [d["title"] for d in state["drafts"].values() if d.get("title")]
+    titles += [d.get("topic", {}).get("title_uz", "") for d in state["drafts"].values()]
+    return [t for t in titles if t]
+
+
+def generate_draft(svc: Services, cfg: dict, state: dict, sid: str) -> dict:
+    """1–5-agentlar: mavzu → maslahat va post → nazorat → rasm → audio. 6-agent adminga yuboradi."""
+    g = svc.gemini
+    prev = previous_titles(state)
+
+    # 1-agent: mavzu
+    tp = topic.find_topic(g, cfg, prev)
+
+    # 2-agent: izlanish va yozish
+    rs = writer.research(g, tp)
+    post = writer.write(g, cfg, tp, rs["notes"])
+
+    # 5-agent: matn nazorati (kerak bo‘lsa, qayta yozdiriladi)
+    qa = {}
+    for attempt in range(cfg["quality"]["max_rewrites"] + 1):
+        hard, soft = quality.rule_check(cfg, post, prev)
+        review = quality.llm_check(g, cfg, post, rs["notes"])
+        issues = hard + ([] if review.get("pass") else review.get("issues", []))
+        qa = {"passed": not issues, "score": review.get("score"), "summary_uz": review.get("summary_uz", ""),
+              "issues": issues, "warnings": soft, "rewrites": attempt}
+        if not issues or attempt == cfg["quality"]["max_rewrites"]:
+            break
+        log.info("Nazoratdan o‘tmadi (%d-urinish): %s", attempt + 1, issues)
+        post = writer.rewrite(g, cfg, post, rs["notes"], issues)
+
+    if not qa["passed"] and cfg["quality"].get("on_fail") == "skip":
+        raise RuntimeError("Post nazoratdan o‘tmadi va sozlamaga ko‘ra tashlab yuborildi: " + "; ".join(qa["issues"])[:500])
+
+    # 3-agent: rasm (+5-agent rasm nazorati, bitta qayta urinish)
+    img = image_agent.generate(g, cfg, post["image_prompt"])
+    try:
+        ic = quality.image_check(g, img, post["title"])
+        if not ic.get("pass"):
+            log.info("Rasm nazoratdan o‘tmadi: %s", ic.get("issues"))
+            img = image_agent.generate(g, cfg, post["image_prompt"], extra="Avoid: " + "; ".join(ic.get("issues", [])))
+            ic = quality.image_check(g, img, post["title"])
+            if not ic.get("pass"):
+                qa["warnings"].append("Rasm: " + "; ".join(ic.get("issues", [])))
+    except Exception as e:  # noqa: BLE001 — rasm tekshiruvi ishlamasa, post to‘xtamaydi
+        log.warning("Rasm tekshiruvi bajarilmadi: %s", e)
+        qa["warnings"].append("Rasm avtomatik tekshirilmadi")
+
+    # 4-agent: audio
+    voice = audio_agent.speak(svc.eleven, cfg, post["audio_script"])
+
+    old = state["drafts"].get(sid, {})
+    draft = {
+        "slot": sid,
+        "created": utc_now_iso(),
+        "status": "pending",
+        "topic": {k: tp.get(k) for k in ("title_uz", "angle")},
+        "title": post["title"],
+        "caption": post["caption"],
+        "audio_script": post["audio_script"],
+        "sources": rs["sources"],
+        "qa": qa,
+        "voice": {"duration": voice.duration, "model": voice.model, "voice_id": voice.voice_id},
+        "regen_count": old.get("regen_count", 0),
+    }
+    if cfg.get("mode") == "auto" and qa["passed"]:
+        draft["status"] = "auto"
+
+    # 6-agent: adminga yuborish
+    publisher.send_to_admin(svc.tg, cfg, draft, img, voice)
+    state["drafts"][sid] = draft
+    return draft
+
+
+# ---------------------------------------------------------------- admin updates
+HELP = ("Men Techburin Construct kanali uchun postlar tayyorlayman.\n\n"
+        "/yangi — keyingi post uchun hozir qoralama tayyorlash\n"
+        "/holat — navbatdagi postlar holati\n\n"
+        "Qoralama tagidagi tugmalar: ✅ vaqtida chiqarish, 🚀 hozir chiqarish, 🔁 qayta yozish, ❌ bekor qilish.\n"
+        "Javoblar 30 daqiqa ichida bajariladi.")
+
+
+def status_text(cfg: dict, state: dict) -> str:
+    now = now_local(cfg)
+    lines = [f"<b>Keyingi post vaqti:</b> {publisher.pretty_slot(next_slot(cfg, now))}"]
+    active = [d for d in state["drafts"].values() if d["status"] not in DONE]
+    for d in sorted(active, key=lambda x: x["slot"]):
+        lines.append(f"• {publisher.pretty_slot(parse_slot(cfg, d['slot']))}: {html.escape(d.get('title', ''))} — {d['status']}")
+    if not active:
+        lines.append("Faol qoralama yo‘q.")
+    last = [h for h in state["history"]][-3:]
+    if last:
+        lines.append("\n<b>Oxirgi chiqqanlar:</b>")
+        lines += [f"• {h['date']}: {html.escape(h['title'])}" for h in last]
+    return "\n".join(lines)
+
+
+def process_updates(svc: Services, cfg: dict, state: dict) -> None:
+    tg, admin = svc.tg, int(cfg["telegram"]["admin_chat_id"])
+    updates = tg.get_updates(state["last_update_id"] + 1)
+    for u in updates:
+        state["last_update_id"] = max(state["last_update_id"], u["update_id"])
+        cq = u.get("callback_query")
+        if cq:
+            if cq["from"]["id"] != admin:
+                tg.answer_callback(cq["id"], "Ruxsat yo‘q")
+                continue
+            action, _, sid = (cq.get("data") or "").partition(":")
+            d = state["drafts"].get(sid)
+            if not d:
+                tg.answer_callback(cq["id"], "Qoralama topilmadi")
+                continue
+            if d["status"] in DONE:
+                tg.answer_callback(cq["id"], "Bu qoralama allaqachon yakunlangan")
+                continue
+            if action == "approve":
+                d["status"] = "approved"
+            elif action == "now":
+                d["status"] = "publish_now"
+            elif action == "regen":
+                d["status"] = "regen_requested"
+            elif action == "reject":
+                d["status"] = "rejected"
+            else:
+                continue
+            tg.answer_callback(cq["id"], "Qabul qilindi")
+            publisher.refresh_control(tg, cfg, d)
+            continue
+
+        msg = u.get("message")
+        if not msg or msg.get("chat", {}).get("id") != admin:
+            continue
+        text = (msg.get("text") or "").strip().split("@")[0].lower()
+        if text in ("/yangi", "yangi"):
+            state["force_generate"] = True
+            tg.send_message(admin, "🛠 Yangi qoralama tayyorlanmoqda, bir necha daqiqada keladi.")
+        elif text in ("/holat", "holat"):
+            tg.send_message(admin, status_text(cfg, state))
+        elif text.startswith("/"):
+            tg.send_message(admin, HELP, parse_mode=None)
+
+
+# ---------------------------------------------------------------- publishing
+def publish_due(svc: Services, cfg: dict, state: dict, now) -> None:
+    late = timedelta(hours=cfg["schedule"].get("late_publish_hours", 6))
+    for d in state["drafts"].values():
+        if d["status"] in DONE or d["status"] == "failed":
+            continue
+        slot = parse_slot(cfg, d["slot"])
+        ready = d["status"] == "publish_now" or (
+            d["status"] in ("approved", "auto") and now >= slot - timedelta(minutes=PUBLISH_EARLY_MIN))
+        if d["status"] == "publish_now" or (ready and now <= slot + late):
+            try:
+                publisher.publish(svc.tg, cfg, d)
+                d["status"] = "published"
+                state["history"].append({"date": now.strftime("%Y-%m-%d"), "title": d["title"], "slot": d["slot"]})
+                log.info("Chiqarildi: %s", d["title"])
+            except Exception as e:  # noqa: BLE001
+                d["status"], d["error"] = "failed", str(e)[:300]
+                log.error("Chiqarishda xato: %s", e)
+            publisher.refresh_control(svc.tg, cfg, d)
+        elif now > slot + late and d["status"] in ("pending", "approved", "auto", "regen_requested"):
+            d["status"] = "expired"
+            publisher.refresh_control(svc.tg, cfg, d)
+
+
+def maybe_generate(svc: Services, cfg: dict, state: dict, now) -> None:
+    window = timedelta(hours=cfg["schedule"].get("generate_hours_before", 14))
+    late = timedelta(hours=cfg["schedule"].get("late_publish_hours", 6))
+    admin = cfg["telegram"]["admin_chat_id"]
+
+    targets = [sid for sid, d in state["drafts"].items()
+               if d["status"] == "regen_requested" and now <= parse_slot(cfg, sid) + late]
+
+    slot = next_slot(cfg, now)
+    while state["drafts"].get(slot_id(slot), {}).get("status") in DONE + ("failed",):
+        slot = next_slot(cfg, slot + timedelta(minutes=1))
+    sid = slot_id(slot)
+    existing = state["drafts"].get(sid)
+    if state.get("force_generate"):
+        targets.append(sid)
+    elif existing is None and slot - now <= window:
+        targets.append(sid)
+    state["force_generate"] = False
+
+    for sid in dict.fromkeys(targets):
+        old = state["drafts"].get(sid)
+        if old and old["status"] == "regen_requested" and old.get("regen_count", 0) >= MAX_REGENS:
+            old["status"] = "pending"
+            svc.tg.send_message(admin, "🔁 Qayta yozish chegarasiga yetildi. Oxirgi qoralamani tasdiqlang yoki bekor qiling.")
+            publisher.refresh_control(svc.tg, cfg, old)
+            continue
+        errors = state["gen_errors"].get(sid, 0)
+        if errors >= MAX_GEN_ERRORS:
+            continue
+        try:
+            new = generate_draft(svc, cfg, state, sid)
+            state["gen_errors"].pop(sid, None)
+            if old:
+                new["regen_count"] = old.get("regen_count", 0) + (1 if old["status"] == "regen_requested" else 0)
+                publisher.refresh_control(svc.tg, cfg, {**old, "status": "replaced"})
+            log.info("Qoralama tayyor: %s — %s", sid, new["title"])
+        except Exception as e:  # noqa: BLE001
+            state["gen_errors"][sid] = errors + 1
+            log.exception("Qoralama tayyorlanmadi")
+            note = " Keyingi tekshiruvda yana urinib ko‘raman." if errors + 1 < MAX_GEN_ERRORS else \
+                   " 3 marta urinildi, bu vaqt uchun to‘xtatildi. /yangi bilan qayta boshlashingiz mumkin."
+            svc.tg.send_message(admin, f"⛔ Qoralama tayyorlanmadi: {html.escape(str(e)[:400])}.{note}")
+
+
+def tick(svc: Services, cfg: dict, state: dict, now=None) -> None:
+    now = now or now_local(cfg)
+    process_updates(svc, cfg, state)
+    publish_due(svc, cfg, state, now)
+    maybe_generate(svc, cfg, state, now)
+    publish_due(svc, cfg, state, now)  # avtomatik rejimda yangi tayyorlangan post vaqti kelgan bo‘lsa
