@@ -17,7 +17,7 @@ Readers are in Uzbekistan. Topics must be practical, help a reader make a better
 foundations, piles, drilling or site work, and naturally lead them to ask the company for advice.
 Never propose topics about prices, discounts, competitors, politics or religion."""
 
-PROMPT = """Use Google Search to find 6 fresh, concrete topic ideas for the next post.
+PROMPT = """{how} 6 fresh, concrete topic ideas for the next post.
 
 Preferred source types:
 {sources}
@@ -53,8 +53,11 @@ def find_topic(gemini: Gemini, cfg: dict, previous_titles: list[str]) -> dict:
         direction=r["direction"], audience=", ".join(r["audience"]),
     )
     history = "\n".join(f"- {t}" for t in previous_titles[-80:]) or "- (hali yo‘q)"
-    res = gemini.text(PROMPT.format(sources=r.get("sources", ""), history=history), system=system,
-                      search=True, temperature=0.9)
+    search = bool(cfg.get("features", {}).get("web_search", True))
+    how = ("Use Google Search to find" if search else
+           "Without web access, using your own professional knowledge of foundation engineering, propose")
+    res = gemini.text(PROMPT.format(how=how, sources=r.get("sources", ""), history=history), system=system,
+                      search=search, temperature=0.9)
     data = extract_json(res.text)
     topics = [t for t in data.get("topics", []) if t.get("title_uz")]
     if not topics:

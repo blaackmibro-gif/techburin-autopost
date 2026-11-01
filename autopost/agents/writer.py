@@ -15,7 +15,7 @@ Topic (Uzbek): {title}
 Planned advice: {angle}
 Suggested search: {query}
 
-Use Google Search. Write concise research notes in English (max 400 words):
+{how} Write concise research notes in English (max 400 words):
 1. CORE ADVICE: the one practical recommendation the reader should take away.
 2. SUPPORTING FACTS: 3–6 facts, each followed by the source name in brackets.
 3. COMMON MISTAKES: 2–3 items.
@@ -106,11 +106,19 @@ def _system(cfg: dict) -> str:
     )
 
 
-def research(gemini: Gemini, topic: dict) -> dict:
+NO_SEARCH_HOW = ("You have no web access: rely only on well-established, widely accepted engineering practice. "
+                 "For SUPPORTING FACTS name the kind of source (e.g. 'general piling practice', 'geotechnical design norms') "
+                 "instead of inventing documents, and put every specific number or norm under DO NOT CLAIM unless it is "
+                 "universally known.")
+
+
+def research(gemini: Gemini, topic: dict, cfg: dict | None = None) -> dict:
+    search = bool((cfg or {}).get("features", {}).get("web_search", True))
     res = gemini.text(
         RESEARCH_PROMPT.format(title=topic["title_uz"], angle=topic.get("angle", ""),
-                               query=topic.get("search_query", topic["title_uz"])),
-        search=True, temperature=0.3,
+                               query=topic.get("search_query", topic["title_uz"]),
+                               how="Use Google Search." if search else NO_SEARCH_HOW),
+        search=search, temperature=0.3,
     )
     sources = res.sources or topic.get("discovery_sources", [])
     return {"notes": res.text.strip(), "sources": sources[:8]}

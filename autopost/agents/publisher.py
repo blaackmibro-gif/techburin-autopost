@@ -46,7 +46,8 @@ def control_text(cfg: dict, draft: dict) -> str:
     src = draft.get("sources", [])[:5]
     src_lines = "\n".join(
         f"• <a href=\"{html.escape(s['url'], quote=True)}\">{html.escape(s.get('title') or 'manba')}</a>" for s in src
-    ) or "• (manba ko‘rsatilmagan)"
+    ) or ("• internet qidiruvisiz (bepul rejim), umumiy amaliyot asosida yozildi"
+          if not cfg.get("features", {}).get("web_search", True) else "• (manba ko‘rsatilmagan)")
     voice = draft.get("voice", {})
     voice_line = f"{voice.get('duration') or '?'} soniya · {html.escape(voice.get('model', ''))}" if voice else "yo‘q"
 
