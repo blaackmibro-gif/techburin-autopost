@@ -39,6 +39,11 @@ schedule:
 
 mode: approval                       # approval = har post avval adminga keladi | auto = nazoratdan o‘tsa o‘zi chiqadi
 
+# Gemini bepul tarifida internet qidiruvi va AI rasm yo‘q.
+# Billing yoqsangiz: web_search: true va image.mode: ai qiling.
+features:
+  web_search: false
+
 models:
   text: "gemini-3.6-flash"
   text_fallbacks: ["gemini-3.5-flash", "gemini-flash-latest"]
@@ -85,6 +90,8 @@ quality:
   extra_bans: ""
 
 image:
+  mode: card                         # card = brend kartochka (bepul) | ai = Nano Banana rasmi (billing kerak)
+  photos_dir: "assets/photos"        # card rejimida: bu yerga obyekt rasmlarini qo‘ysangiz, kartochka ular ustiga chiziladi
   aspect_ratio: "1:1"
   size_px: 1080
   style: "Real foto ko‘rinishi: qurilish maydoni, burg‘ulash uskunalari"

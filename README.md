@@ -81,6 +81,16 @@ GitHub'da faylni ochib, qalam belgisi bilan tahrirlang va **Commit changes** bos
 **To‘liq avtomatik rejimga o‘tish:** sifat barqaror bo‘lgach, `mode: approval` ni `mode: auto` ga o‘zgartiring.
 Shunda nazoratdan o‘tgan postlar tasdiqsiz chiqadi, o‘tmaganlari baribir sizga keladi.
 
+## Bepul rejim va to‘liq rejim
+Hozir tizim **bepul rejimda** ishlaydi (`config.yaml`):
+- `features.web_search: false`: mavzu va maslahat Gemini'ning o‘z bilimidan yoziladi, aniq raqamlar ishlatilmaydi.
+- `image.mode: card`: AI rasm o‘rniga brend kartochka (sarlavha, logo, telefon) chiziladi.
+  `assets/photos` papkasiga obyekt rasmlarini yuklasangiz, kartochka shu rasmlar ustiga chiziladi.
+
+**To‘liq rejimga o‘tish:** Google AI Studio'da billing yoqing, keyin `config.yaml` da
+`web_search: true` va `mode: ai` qiling. Shunda internetdan izlash va Nano Banana rasmlari ishlaydi
+(taxminan oyiga $1–2).
+
 ## Xarajatlar
 - **GitHub:** bepul. Tizim oyiga taxminan 1100 daqiqa ishlatadi, private repo uchun bepul limit 2000 daqiqa.
 - **Gemini:** rasm yaratish pullik bo‘lishi mumkin; AI Studio'da billing yoqing va limit qo‘ying.
