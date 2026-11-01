@@ -1,9 +1,40 @@
 {
   "last_update_id": 0,
-  "drafts": {},
+  "drafts": {
+    "2026-11-02T09:00": {
+      "slot": "2026-11-02T09:00",
+      "created": "2026-11-01T01:53:58+00:00",
+      "status": "pending",
+      "topic": {
+        "title_uz": "Cho‘kuvchan gruntda qaysi qoziq afzal: burg‘ulashmi yoki urish?",
+        "angle": "Advises how to select between bored piles and 35x35 driven piles on collapsible loess soils according to ShNQ standards."
+      },
+      "title": "🧪 Cho‘kuvchan gruntda qaysi svay ma’qul: qoqishmi yoki burg‘ulash?",
+      "caption": "<b>🧪 Cho‘kuvchan gruntda qaysi svay ma’qul: qoqishmi yoki burg‘ulash?</b>\n\nO‘zbekistonda cho‘kuvchan gruntlar (lyoss) ko‘p uchraydi. Bunday joyda poydevor turini noto‘g‘ri tanlash bino cho‘kishiga olib kelishi mumkin. Nimaga e’tibor berish kerak: 1. Qoqiladigan svay (35x35 cm) urilganda atrofdagi zaminni zichlaydi va ishqalanish kuchini oshiradi. Qatlam o‘rtacha qalinlikda bo‘lsa, bu samarali yechimdir. 2. Burg‘ulangan qoziqlar cho‘kuvchan qatlam juda chuqur bo‘lganda va yaqin binolarga tebranish zarari tegmasligi uchun qo‘llaniladi. 3. Har ikki usulda ham svay uchi cho‘kuvchan qatlamdan o‘tib, mustahkam gruntga kirishi shart. Tanlov geologik qidiruv va loyihaga bog‘liq.\n\nPoydevor bo‘yicha savolingiz bormi? Bepul maslahat uchun yozing yoki qo‘ng‘iroq qiling.\n📞 +998 77 237 17 07  |  techburinconstruct.com\n✍️ @invenxfund\n\n#TechburinConstruct #svay #poydevor #qurilish",
+      "audio_script": "Assalomu alaykum! Techburin Construct’dan foydali maslahat. Cho‘kuvchan gruntlarda poydevor tanlash alohida yondashuvni talab qiladi. Qoqiladigan o‘ttiz beshga o‘ttiz besh santimetrli svaylar urish jarayonida atrofdagi zaminni zichlaydi va mustahkamligini oshiradi. Burg‘ulangan qoziqlar esa cho‘kuvchan qatlam juda chuqur bo‘lganda va yon-atrofdagi binolarga tebranish ziyon yetkazmasligi uchun ishlatiladi. Eng muhimi, har ikki usulda ham svay uchi cho‘kuvchan qatlamdan o‘tib, mustahkam poydevor zaminiga kirishi lozim. Batafsil — kanalimizdagi postda.",
+      "sources": [],
+      "qa": {
+        "passed": true,
+        "score": 10,
+        "summary_uz": "Post va audio ssenariy barcha qoidalarga hamda manba ma'lumotlariga to'liq mos keladi. Texnik ko'rsatkichlar to'g'ri berilgan va audio format talablariga rioya qilingan.",
+        "issues": [],
+        "warnings": [],
+        "rewrites": 0
+      },
+      "voice": {
+        "duration": null,
+        "model": "eleven_v4",
+        "voice_id": "CwhRBWXzGAHq8TQ4Fs17"
+      },
+      "regen_count": 0,
+      "admin_msgs": {
+        "photo": 10,
+        "voice": 11,
+        "control": 12
+      }
+    }
+  },
   "history": [],
   "force_generate": false,
-  "gen_errors": {
-    "2026-11-02T09:00": 1
-  }
+  "gen_errors": {}
 }
