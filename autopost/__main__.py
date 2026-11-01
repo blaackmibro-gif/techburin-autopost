@@ -9,6 +9,7 @@ from __future__ import annotations
 import html
 import logging
 import sys
+from urllib.parse import urlparse
 
 from .config import load_config, secret
 from .gemini import Gemini
@@ -41,6 +42,29 @@ def cmd_tick(cfg, force: bool = False) -> None:
         save_state(state)
 
 
+def check_updates(tg: Telegram) -> list[str]:
+    """Tugma bosilishlari botga yetib kelyaptimi: webhook va kutib turgan yangilanishlar."""
+    lines = []
+    try:
+        wh = tg.get_webhook_info()
+        if wh.get("url"):
+            host = urlparse(wh["url"]).netloc or "noma’lum manzil"
+            err = f" Oxirgi xato: {wh['last_error_message']}" if wh.get("last_error_message") else ""
+            lines.append(f"⛔ Botga webhook ulangan ({host}). Tugma bosilishlari o‘sha yerga ketyapti, "
+                         f"tizim ularni o‘chirib qo‘yadi.{err}")
+        else:
+            lines.append(f"✅ Webhook yo‘q (Telegram navbatida: {wh.get('pending_update_count', 0)} ta)")
+        state = load_state()
+        ups = tg.get_updates(state["last_update_id"] + 1)
+        presses = sum(1 for u in ups if u.get("callback_query"))
+        msgs = sum(1 for u in ups if u.get("message"))
+        lines.append(f"ℹ️ Botga kelib turgan: {len(ups)} ta (tugma bosish: {presses}, xabar: {msgs}). "
+                     f"Oxirgi o‘qilgan raqam: {state['last_update_id']}")
+    except Exception as e:  # noqa: BLE001
+        lines.append(f"⛔ Telegram yangilanishlari: {str(e)[:300]}")
+    return lines
+
+
 def cmd_check(cfg) -> int:
     lines, ok = [], True
     tg = Telegram(secret("TELEGRAM_BOT_TOKEN"))
@@ -58,6 +82,9 @@ def cmd_check(cfg) -> int:
     except Exception as e:  # noqa: BLE001
         ok = False
         lines.append(f"⛔ Telegram: {e}")
+    lines += check_updates(tg)
+    if any(line.startswith("⛔") for line in lines):
+        ok = False
     try:
         m = cfg["models"]
         g = Gemini(secret("GEMINI_API_KEY"), [m["text"], *m.get("text_fallbacks", [])], [])

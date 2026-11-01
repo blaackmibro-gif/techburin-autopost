@@ -90,18 +90,28 @@ class Telegram:
             pass  # eski tugma bosilishlariga javob berib bo‘lmaydi, bu normal
 
     # --- qabul qilish ---
-    def get_updates(self, offset: int):
+    def get_updates(self, offset: int, _retried: bool = False):
         try:
-            return self.call("getUpdates", {
+            updates = self.call("getUpdates", {
                 "offset": offset,
                 "timeout": 0,
                 "allowed_updates": ["message", "callback_query"],
             })
         except TelegramError as e:
-            if "409" in str(e):  # webhook o‘rnatilgan bo‘lsa
+            if "409" in str(e) and not _retried:  # webhook o‘rnatilgan bo‘lsa
+                log.warning("Telegram: botga webhook ulangan ekan, o‘chirib qayta o‘qiyman (%s)", str(e)[:200])
                 self.call("deleteWebhook", {"drop_pending_updates": False})
-                return self.get_updates(offset)
+                return self.get_updates(offset, _retried=True)
             raise
+        kinds = {}
+        for u in updates:
+            kind = next((k for k in u if k != "update_id"), "?")
+            kinds[kind] = kinds.get(kind, 0) + 1
+        log.info("Telegram'dan %d ta yangilanish olindi (offset=%s) %s", len(updates), offset, kinds or "")
+        return updates
+
+    def get_webhook_info(self) -> dict:
+        return self.call("getWebhookInfo")
 
     def get_chat(self, chat_id):
         return self.call("getChat", {"chat_id": chat_id})
