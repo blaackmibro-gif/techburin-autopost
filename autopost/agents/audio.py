@@ -13,6 +13,17 @@ import requests
 log = logging.getLogger(__name__)
 API = "https://api.elevenlabs.io"
 
+# ElevenLabs'ning hamma akkauntlarda bor standart ovozlari.
+# Kalitda «Voices → Read» ruxsati bo‘lmasa, shular ishlatiladi.
+DEFAULT_VOICES = [
+    {"voice_id": "JBFqnCBsd6RMkjVDRZzb", "name": "George", "labels": {"gender": "male"}},
+    {"voice_id": "nPczCjzi2devNBz1zQrb", "name": "Brian", "labels": {"gender": "male"}},
+    {"voice_id": "onwK4e9ZLuTAKqWW03F9", "name": "Daniel", "labels": {"gender": "male"}},
+    {"voice_id": "TX3LPaxmHKxFdv7VOQHJ", "name": "Liam", "labels": {"gender": "male"}},
+    {"voice_id": "IKne3meq5aSn9XLyUdCD", "name": "Charlie", "labels": {"gender": "male"}},
+    {"voice_id": "EXAVITQu4vr4xnSDxMaL", "name": "Sarah", "labels": {"gender": "female"}},
+]
+
 
 class AudioError(RuntimeError):
     pass
@@ -31,13 +42,17 @@ class Voice:
 class ElevenLabs:
     def __init__(self, api_key: str):
         self.headers = {"xi-api-key": api_key}
+        self.used_defaults = False
 
     def voices(self) -> list[dict]:
         r = requests.get(f"{API}/v1/voices", headers=self.headers, timeout=60)
+        if r.status_code == 401 and "voices_read" in r.text:
+            log.warning("Kalitda «Voices → Read» ruxsati yo‘q, standart ovozlar ishlatiladi")
+            self.used_defaults = True
+            return DEFAULT_VOICES
         if r.status_code != 200:
-            raise AudioError(f"Ovozlar ro‘yxatini olib bo‘lmadi: {r.status_code} {r.text[:200]}. "
-                             "API kalitida «Voices → Read» ruxsati yoqilganini tekshiring yoki config.yaml'da audio.voice_id ni yozing.")
-        return r.json().get("voices", [])
+            raise AudioError(f"Ovozlar ro‘yxatini olib bo‘lmadi: {r.status_code} {r.text[:200]}")
+        return r.json().get("voices", []) or DEFAULT_VOICES
 
     def pick_voice(self, gender: str = "male") -> str:
         voices = self.voices()
@@ -58,6 +73,8 @@ class ElevenLabs:
             body.pop("language_code")  # model tilni majburlashni qo‘llamasa
             r = requests.post(f"{API}/v1/text-to-speech/{voice_id}", params={"output_format": "mp3_44100_128"},
                               headers={**self.headers, "accept": "audio/mpeg"}, json=body, timeout=180)
+        if r.status_code == 401 and "text_to_speech" in r.text:
+            raise AudioError("Kalitda «Text to Speech → Access» ruxsati yo‘q. ElevenLabs'da kalitni shu ruxsat bilan qayta yarating.")
         if r.status_code != 200:
             raise AudioError(f"{model}: {r.status_code} {r.text[:300]}")
         return r.content
