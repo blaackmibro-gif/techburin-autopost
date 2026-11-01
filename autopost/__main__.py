@@ -68,10 +68,9 @@ def cmd_check(cfg) -> int:
         lines.append(f"⛔ Gemini: {str(e)[:300]}")
     try:
         el = ElevenLabs(secret("ELEVENLABS_API_KEY"))
-        if cfg["audio"].get("voice_id"):
-            lines.append("✅ ElevenLabs: voice_id config.yaml'da berilgan")
-        else:
-            lines.append(f"✅ ElevenLabs: {len(el.voices())} ta ovoz mavjud")
+        voice = speak(el, cfg, "Assalomu alaykum! Bu Techburin Construct ovozli xabarini sinash.")
+        note = " (standart ovozlar ishlatiladi)" if el.used_defaults else ""
+        lines.append(f"✅ ElevenLabs: o‘zbekcha ovoz yaratildi ({voice.model}){note}")
     except Exception as e:  # noqa: BLE001
         ok = False
         lines.append(f"⛔ ElevenLabs: {str(e)[:300]}")
