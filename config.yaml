@@ -59,7 +59,7 @@ post:
   max_emoji: 4
   hashtags: "#TechburinConstruct #svay #poydevor #qurilish"
   cta: "Poydevor bo‘yicha savolingiz bormi? Bepul maslahat uchun yozing yoki qo‘ng‘iroq qiling."
-  phone: "+998 77 237 17 07"
+  phone: "+998 77 235 17 07"
   site: "techburinconstruct.com"
   contact: "@invenxfund"
   # Asosiy stil namunasi (A variant)
@@ -109,3 +109,10 @@ audio:
   voice_gender: male
   target_seconds: "30–45"
   scope: "Asosiy maslahatning qisqa versiyasi"
+
+video:
+  enabled: true                      # kartochka + ovoz + subtitrdan video (bepul). O‘chirish: false
+  aspect_ratio: "4:5"                # 4:5 = Telegram lentasi uchun | 9:16 = Reels/Shorts uchun
+  subtitles: true                    # pastda ovozga mos yozuv
+  end_seconds: 2                     # oxirida telefon raqami necha soniya ko‘rinib tursin
+  caption: "🎬 Video-maslahat"       # video tagidagi yozuv (sarlavhadan keyin)

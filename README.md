@@ -12,6 +12,7 @@
 | 4. Audio | ElevenLabs orqali qisqa ovozli maslahat (30–45 soniya) tayyorlaydi |
 | 5. Nazorat | Narx, raqobatchi, manbasiz raqam, imlo va uzunlikni tekshiradi; o‘tmasa 2 marta qayta yozdiradi |
 | 6. Chiqarish | Qoralamani sizga Telegram'da yuboradi, tasdiqlasangiz belgilangan vaqtda kanalga chiqaradi |
+| 7. Video | Kartochka, ovozli maslahat va subtitrdan 30–45 soniyalik video yig‘adi (bepul) |
 
 **Jadval:** Dushanba, Chorshanba, Juma soat 09:00 (Toshkent). Qoralama bir kun oldin kechqurun (19:00–20:00 atrofida) keladi.
 
@@ -80,6 +81,12 @@ GitHub'da faylni ochib, qalam belgisi bilan tahrirlang va **Commit changes** bos
 
 **To‘liq avtomatik rejimga o‘tish:** sifat barqaror bo‘lgach, `mode: approval` ni `mode: auto` ga o‘zgartiring.
 Shunda nazoratdan o‘tgan postlar tasdiqsiz chiqadi, o‘tmaganlari baribir sizga keladi.
+
+## Video
+Har bir qoralama bilan birga video ham keladi: kartochka sekin yaqinlashadi, pastda ovozga mos subtitr chiqadi,
+oxirida 2 soniya telefon raqami ko‘rinadi. Kanalga rasm, ovoz va video ketma-ket chiqadi.
+Sozlamalar `config.yaml` → `video` bo‘limida: o‘chirish (`enabled: false`), format (`4:5` yoki Reels uchun `9:16`).
+Video tayyorlanmay qolsa ham post to‘xtamaydi: rasm va ovoz odatdagidek chiqadi, qoralamada eslatma ko‘rinadi.
 
 ## Bepul rejim va to‘liq rejim
 Hozir tizim **bepul rejimda** ishlaydi (`config.yaml`):
