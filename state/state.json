@@ -1,5 +1,5 @@
 {
-  "last_update_id": 191858304,
+  "last_update_id": 191858305,
   "drafts": {
     "2026-11-02T09:00": {
       "slot": "2026-11-02T09:00",
@@ -37,6 +37,38 @@
         "voice": 70
       },
       "post_link": "https://t.me/techburinconstruct/69"
+    },
+    "2026-11-04T09:00": {
+      "slot": "2026-11-04T09:00",
+      "created": "2026-11-02T17:37:34+00:00",
+      "status": "pending",
+      "topic": {
+        "title_uz": "Qo‘shni binolar yaqinida qoziq urish: xavflar va yechim",
+        "angle": "Explains how driving piles near existing buildings causes vibration damage and when contractors must switch to bored piles with casing."
+      },
+      "title": "🏗 Qo‘shni bino yonida poydevor qurish: xavf va yechim",
+      "caption": "<b>🏗 Qo‘shni bino yonida poydevor qurish: xavf va yechim</b>\n\nShahar ichida, mavjud binolar yonida poydevor qurish jiddiy ehtiyotkorlikni talab qiladi. Noto‘g‘ri usul tanlansa, qo‘shni devorlarda yoriq paydo bo‘lishi va yer cho‘kishi mumkin.\n\nAmaliy tavsiyalar:\n1. Qoqiladigan qoziq kuchli tebranish hosil qiladi. Bu zarba to‘lqinlari qo‘shni bino poydevoriga shikast yetkazishi ehtimolini oshiradi.\n2. Yaqin masofada burg‘ulangan qoziqlarni tanlang. Ular tuproqni surmasdan qazib olinadi va tebranishsiz o‘rnatiladi.\n3. Bo‘sh va nam tuproqlarda po‘lat himoya quvurlaridan foydalaning. Quvurlar quduq devori qulashiga yo‘l qo‘ymay, qo‘shni poydevor mustahkamligini saqlaydi.\n\nIsh boshlashdan oldin qo‘shni binolar holatini hujjatlashtirishni unutmang.\n\nPoydevor bo‘yicha savolingiz bormi? Bepul maslahat uchun yozing yoki qo‘ng‘iroq qiling.\n📞 +998 77 237 17 07  |  techburinconstruct.com\n✍️ @invenxfund\n\n#TechburinConstruct #svay #poydevor #qurilish",
+      "audio_script": "Assalomu alaykum! Techburin Construct’dan foydali maslahat.\n\nMavjud binolar yonida qoziq qoqish paytida kuchli tebranish va zarba to‘lqini hosil bo‘ladi. Bu holat qo‘shni devorlarda yoriq keltirib chiqarishi mumkin. Xavfni kamaytirish uchun tebranishsiz ishlaydigan burg‘ulangan qoziqlardan foydalanish tavsiya etiladi. Murakkab va bo‘sh tuproqlarda esa quduq devorini po‘lat quvurlar bilan mustahkamlash zarur. Shunda yon atrofdagi yer cho‘kmaydi.\n\nBatafsil — kanalimizdagi postda.",
+      "sources": [],
+      "qa": {
+        "passed": true,
+        "score": 10,
+        "summary_uz": "Post va audio ssenariy barcha talablar hamda manba ma'lumotlariga to'liq mos keladi. Matn ravon va o'zbek tilida to'g'ri yozilgan, amaliy tavsiyalar berilgan.",
+        "issues": [],
+        "warnings": [],
+        "rewrites": 2
+      },
+      "voice": {
+        "duration": null,
+        "model": "eleven_v4",
+        "voice_id": "CwhRBWXzGAHq8TQ4Fs17"
+      },
+      "regen_count": 0,
+      "admin_msgs": {
+        "photo": 17,
+        "voice": 18,
+        "control": 19
+      }
     }
   },
   "history": [
