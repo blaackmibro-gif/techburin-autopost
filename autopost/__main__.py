@@ -9,9 +9,11 @@ from __future__ import annotations
 import html
 import logging
 import sys
+from urllib.parse import urlparse
 
 from .config import load_config, secret
 from .gemini import Gemini
+from .agents import video as video_agent
 from .agents.audio import ElevenLabs, speak
 from .pipeline import Services, tick
 from .state import load_state, save_state
@@ -41,6 +43,29 @@ def cmd_tick(cfg, force: bool = False) -> None:
         save_state(state)
 
 
+def check_updates(tg: Telegram) -> list[str]:
+    """Tugma bosilishlari botga yetib kelyaptimi: webhook va kutib turgan yangilanishlar."""
+    lines = []
+    try:
+        wh = tg.get_webhook_info()
+        if wh.get("url"):
+            host = urlparse(wh["url"]).netloc or "noma’lum manzil"
+            err = f" Oxirgi xato: {wh['last_error_message']}" if wh.get("last_error_message") else ""
+            lines.append(f"⛔ Botga webhook ulangan ({host}). Tugma bosilishlari o‘sha yerga ketyapti, "
+                         f"tizim ularni o‘chirib qo‘yadi.{err}")
+        else:
+            lines.append(f"✅ Webhook yo‘q (Telegram navbatida: {wh.get('pending_update_count', 0)} ta)")
+        state = load_state()
+        ups = tg.get_updates(state["last_update_id"] + 1)
+        presses = sum(1 for u in ups if u.get("callback_query"))
+        msgs = sum(1 for u in ups if u.get("message"))
+        lines.append(f"ℹ️ Botga kelib turgan: {len(ups)} ta (tugma bosish: {presses}, xabar: {msgs}). "
+                     f"Oxirgi o‘qilgan raqam: {state['last_update_id']}")
+    except Exception as e:  # noqa: BLE001
+        lines.append(f"⛔ Telegram yangilanishlari: {str(e)[:300]}")
+    return lines
+
+
 def cmd_check(cfg) -> int:
     lines, ok = [], True
     tg = Telegram(secret("TELEGRAM_BOT_TOKEN"))
@@ -58,6 +83,9 @@ def cmd_check(cfg) -> int:
     except Exception as e:  # noqa: BLE001
         ok = False
         lines.append(f"⛔ Telegram: {e}")
+    lines += check_updates(tg)
+    if any(line.startswith("⛔") for line in lines):
+        ok = False
     try:
         m = cfg["models"]
         g = Gemini(secret("GEMINI_API_KEY"), [m["text"], *m.get("text_fallbacks", [])], [])
@@ -68,13 +96,18 @@ def cmd_check(cfg) -> int:
         lines.append(f"⛔ Gemini: {str(e)[:300]}")
     try:
         el = ElevenLabs(secret("ELEVENLABS_API_KEY"))
-        if cfg["audio"].get("voice_id"):
-            lines.append("✅ ElevenLabs: voice_id config.yaml'da berilgan")
-        else:
-            lines.append(f"✅ ElevenLabs: {len(el.voices())} ta ovoz mavjud")
+        voice = speak(el, cfg, "Assalomu alaykum! Bu Techburin Construct ovozli xabarini sinash.")
+        note = " (standart ovozlar ishlatiladi)" if el.used_defaults else ""
+        lines.append(f"✅ ElevenLabs: o‘zbekcha ovoz yaratildi ({voice.model}){note}")
     except Exception as e:  # noqa: BLE001
         ok = False
         lines.append(f"⛔ ElevenLabs: {str(e)[:300]}")
+    if video_agent.enabled(cfg):
+        if video_agent.ffmpeg_exe():
+            lines.append("✅ Video: ffmpeg tayyor")
+        else:
+            ok = False
+            lines.append("⛔ Video: ffmpeg topilmadi (requirements.txt da imageio-ffmpeg borligini tekshiring)")
 
     report = "\n".join(lines)
     print(report)

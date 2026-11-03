@@ -6,7 +6,9 @@ import logging
 from datetime import timedelta
 
 from .agents import audio as audio_agent
+from .agents import card as card_agent
 from .agents import image as image_agent
+from .agents import video as video_agent
 from .agents import publisher, quality, topic, writer
 from .state import next_slot, now_local, parse_slot, slot_id, utc_now_iso
 
@@ -42,7 +44,7 @@ def generate_draft(svc: Services, cfg: dict, state: dict, sid: str) -> dict:
     tp = topic.find_topic(g, cfg, prev)
 
     # 2-agent: izlanish va yozish
-    rs = writer.research(g, tp)
+    rs = writer.research(g, tp, cfg)
     post = writer.write(g, cfg, tp, rs["notes"])
 
     # 5-agent: matn nazorati (kerak bo‘lsa, qayta yozdiriladi)
@@ -61,7 +63,33 @@ def generate_draft(svc: Services, cfg: dict, state: dict, sid: str) -> dict:
     if not qa["passed"] and cfg["quality"].get("on_fail") == "skip":
         raise RuntimeError("Post nazoratdan o‘tmadi va sozlamaga ko‘ra tashlab yuborildi: " + "; ".join(qa["issues"])[:500])
 
-    # 3-agent: rasm (+5-agent rasm nazorati, bitta qayta urinish)
+    # 3-agent: rasm — bepul rejimda brend kartochka, aks holda AI rasm
+    if cfg["image"].get("mode", "card") != "ai":
+        img = card_agent.make_card(cfg, post["title"])
+    else:
+        img = _ai_image(g, cfg, post, qa)
+
+    # 4-agent: audio
+    voice = audio_agent.speak(svc.eleven, cfg, post["audio_script"])
+
+    # 7-agent: video (kartochka + ovoz + subtitr). Xato bo‘lsa, post videosiz davom etadi.
+    video = _make_video(cfg, img, voice, post, qa)
+    return _finish_draft(svc, cfg, state, sid, tp, post, rs, qa, img, voice, video)
+
+
+def _make_video(cfg: dict, img: bytes, voice, post: dict, qa: dict):
+    if not video_agent.enabled(cfg):
+        return None
+    try:
+        return video_agent.make_video(cfg, img, voice.data, post["audio_script"])
+    except Exception as e:  # noqa: BLE001
+        log.exception("Video tayyorlanmadi")
+        qa.setdefault("warnings", []).append(f"Video tayyorlanmadi: {str(e)[:150]}")
+        return None
+
+
+def _ai_image(g, cfg: dict, post: dict, qa: dict) -> bytes:
+    """Nano Banana rasmi + 5-agent rasm nazorati (bitta qayta urinish)."""
     img = image_agent.generate(g, cfg, post["image_prompt"])
     try:
         ic = quality.image_check(g, img, post["title"])
@@ -74,11 +102,14 @@ def generate_draft(svc: Services, cfg: dict, state: dict, sid: str) -> dict:
     except Exception as e:  # noqa: BLE001 — rasm tekshiruvi ishlamasa, post to‘xtamaydi
         log.warning("Rasm tekshiruvi bajarilmadi: %s", e)
         qa["warnings"].append("Rasm avtomatik tekshirilmadi")
+    return img
 
-    # 4-agent: audio
-    voice = audio_agent.speak(svc.eleven, cfg, post["audio_script"])
 
+def _finish_draft(svc: Services, cfg: dict, state: dict, sid: str, tp: dict, post: dict, rs: dict,
+                  qa: dict, img: bytes, voice, video=None) -> dict:
     old = state["drafts"].get(sid, {})
+    if video is not None and not voice.duration:
+        voice.duration = int(round(video.audio_seconds))  # ovozli xabar uzunligini ham ko‘rsatish uchun
     draft = {
         "slot": sid,
         "created": utc_now_iso(),
@@ -90,13 +121,14 @@ def generate_draft(svc: Services, cfg: dict, state: dict, sid: str) -> dict:
         "sources": rs["sources"],
         "qa": qa,
         "voice": {"duration": voice.duration, "model": voice.model, "voice_id": voice.voice_id},
+        "video": {"duration": video.duration, "size_kb": len(video.data) // 1024} if video is not None else None,
         "regen_count": old.get("regen_count", 0),
     }
     if cfg.get("mode") == "auto" and qa["passed"]:
         draft["status"] = "auto"
 
     # 6-agent: adminga yuborish
-    publisher.send_to_admin(svc.tg, cfg, draft, img, voice)
+    publisher.send_to_admin(svc.tg, cfg, draft, img, voice, video)
     state["drafts"][sid] = draft
     return draft
 
@@ -207,6 +239,7 @@ def maybe_generate(svc: Services, cfg: dict, state: dict, now) -> None:
     sid = slot_id(slot)
     existing = state["drafts"].get(sid)
     if state.get("force_generate"):
+        state["gen_errors"].pop(sid, None)  # qo‘lda so‘ralganda xatolar hisobini nolga qaytaramiz
         targets.append(sid)
     elif existing is None and slot - now <= window:
         targets.append(sid)
