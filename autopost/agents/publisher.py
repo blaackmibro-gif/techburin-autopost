@@ -50,6 +50,8 @@ def control_text(cfg: dict, draft: dict) -> str:
           if not cfg.get("features", {}).get("web_search", True) else "• (manba ko‘rsatilmagan)")
     voice = draft.get("voice", {})
     voice_line = f"{voice.get('duration') or '?'} soniya · {html.escape(voice.get('model', ''))}" if voice else "yo‘q"
+    video = draft.get("video")
+    video_line = f"{video['duration']} soniya · {video['size_kb'] / 1024:.1f} MB" if video else "yo‘q"
 
     status = {
         "pending": f"⏳ Tasdiqlashingizni kutmoqda. Tasdiqlansa, <b>{slot}</b> da chiqadi.",
@@ -69,17 +71,32 @@ def control_text(cfg: dict, draft: dict) -> str:
         f"<b>Mavzu:</b> {html.escape(draft.get('title', ''))}\n"
         f"<b>Nazorat:</b> {qa_line}\n"
         f"<b>Audio:</b> {voice_line}\n"
+        f"<b>Video:</b> {video_line}\n"
         f"<b>Manbalar:</b>\n{src_lines}\n\n"
         f"{status}\n\n"
         f"<i>Tugmani bosgandan keyin holat 30 daqiqa ichida yangilanadi.</i>"
     )
 
 
-def send_to_admin(tg: Telegram, cfg: dict, draft: dict, image: bytes, voice) -> None:
+def video_caption(cfg: dict, draft: dict) -> str:
+    note = (cfg.get("video") or {}).get("caption", "🎬 Video-maslahat")
+    return f"<b>{html.escape(draft.get('title', ''))}</b>\n{html.escape(note)}" if note else ""
+
+
+def send_to_admin(tg: Telegram, cfg: dict, draft: dict, image: bytes, voice, video=None) -> None:
     admin = cfg["telegram"]["admin_chat_id"]
     photo = tg.send_photo(admin, image, draft["caption"])
     vmsg = tg.send_voice(admin, voice.data, voice.filename, voice.mime, duration=voice.duration)
     draft["admin_msgs"] = {"photo": photo["message_id"], "voice": vmsg["message_id"]}
+    if video is not None:
+        try:
+            m = tg.send_video(admin, video.data, video_caption(cfg, draft), video.width, video.height,
+                              video.duration, video.thumb)
+            draft["admin_msgs"]["video"] = m["message_id"]
+        except Exception as e:  # noqa: BLE001 — video yuborilmasa ham post to‘xtamaydi
+            log.warning("Videoni yuborib bo‘lmadi: %s", e)
+            draft["video"] = None
+            draft.setdefault("qa", {}).setdefault("warnings", []).append(f"Video yuborilmadi: {str(e)[:150]}")
     ctrl = tg.send_message(admin, control_text(cfg, draft), buttons(draft))
     draft["admin_msgs"]["control"] = ctrl["message_id"]
 
@@ -96,5 +113,11 @@ def publish(tg: Telegram, cfg: dict, draft: dict) -> None:
     photo = tg.copy_message(channel, admin, msgs["photo"])
     voice = tg.copy_message(channel, admin, msgs["voice"])
     draft["published_msgs"] = {"photo": photo["message_id"], "voice": voice["message_id"]}
+    if msgs.get("video"):
+        try:
+            vid = tg.copy_message(channel, admin, msgs["video"])
+            draft["published_msgs"]["video"] = vid["message_id"]
+        except Exception as e:  # noqa: BLE001 — rasm va ovoz chiqqan, video xatosi postni buzmasin
+            log.warning("Videoni kanalga chiqarib bo‘lmadi: %s", e)
     if str(channel).startswith("@"):
         draft["post_link"] = f"https://t.me/{channel[1:]}/{photo['message_id']}"
