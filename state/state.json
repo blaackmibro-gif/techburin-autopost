@@ -69,6 +69,43 @@
         "voice": 18,
         "control": 19
       }
+    },
+    "2026-11-06T09:00": {
+      "slot": "2026-11-06T09:00",
+      "created": "2026-11-05T16:36:34+00:00",
+      "status": "pending",
+      "topic": {
+        "title_uz": "Burg‘ulangan qoziqlar sifatini tekshirish: PIT va CSL sinovlari",
+        "angle": "Explains how non-destructive testing (PIT and CSL) identifies concrete voids and pile necking before building construction."
+      },
+      "title": "🔍 Qoziq ichidagi nuqsonlarni qanday aniqlash mumkin?",
+      "caption": "<b>🔍 Qoziq ichidagi nuqsonlarni qanday aniqlash mumkin?</b>\n\nBurg‘ulangan qoziqlar yer ostida quyilgani uchun ularning ichki holatini oddiy ko‘z bilan ko‘rib bo‘lmaydi. Beton ichidagi bo‘shliq yoki torayishlar vaqt o‘tib poydevorga zarar yetkazishi mumkin.\n\nSifatni buzmasdan tekshirishning asosiy usullari:\n\n1. PIT sinovi — qoziq boshiga berilgan zarba to‘lqini orqali uzunlik va yoriqlarni tezkor aniqlaydi. Sinov o‘tkazish uchun qoziq boshi toza va silliq bo‘lishi kerak.\n2. CSL sinovi — armatura karkasiga o‘rnatilgan quvurlar orqali ultratovush bilan ichki sifatni yuqori aniqlikda ko‘rsatadi.\n3. CSL quvurlarini beton quyishdan oldin mahkamlashni unutmang, aks holda keyin bu sinovni o‘tkazib bo‘lmaydi.\n\nUshbu sinovlar qoziq yaxlitligini ko‘rsatadi, yuk ko‘tarish qobiliyatini esa alohida sinovlar aniqlaydi.\n\nPoydevor bo‘yicha savolingiz bormi? Bepul maslahat uchun yozing yoki qo‘ng‘iroq qiling.\n📞 +998 77 235 17 07  |  techburinconstruct.com\n✍️ @invenxfund\n\n#TechburinConstruct #svay #poydevor #qurilish",
+      "audio_script": "Assalomu alaykum! Techburin Construct’dan foydali maslahat. Burg‘ulangan qoziqlar yer ostida quyilgani uchun ulardagi bo‘shliq yoki yoriqlarni oddiy ko‘z bilan ko‘rib bo‘lmaydi. Sifatni tekshirish uchun PIT va CSL usullaridan foydalaniladi. PIT sinovi qoziq uzunligi va yaxlitligini tekshirsa, CSL ultratovush orqali beton sifatini aniq ko‘rsatadi. Muhim qoida: CSL quvurlari beton quyishdan oldin armaturaga mahkamlanishi kerak. Qoziq ustini tekshirishdan oldin yaxshilab tozalang. Batafsil — kanalimizdagi postda.",
+      "sources": [],
+      "qa": {
+        "passed": true,
+        "score": 10,
+        "summary_uz": "Post va audio ssenariy barcha qoidalarga hamda tadqiqot ma'lumotlariga to'liq mos keladi. Texnik maslahatlar amaliy, sodda va tushunarli bayon etilgan.",
+        "issues": [],
+        "warnings": [],
+        "rewrites": 0
+      },
+      "voice": {
+        "duration": 38,
+        "model": "eleven_v4",
+        "voice_id": "CwhRBWXzGAHq8TQ4Fs17"
+      },
+      "video": {
+        "duration": 40,
+        "size_kb": 3779
+      },
+      "regen_count": 0,
+      "admin_msgs": {
+        "photo": 22,
+        "voice": 23,
+        "video": 24,
+        "control": 25
+      }
     }
   },
   "history": [
