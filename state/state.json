@@ -73,7 +73,7 @@
     "2026-11-06T09:00": {
       "slot": "2026-11-06T09:00",
       "created": "2026-11-05T16:36:34+00:00",
-      "status": "pending",
+      "status": "expired",
       "topic": {
         "title_uz": "Burg‘ulangan qoziqlar sifatini tekshirish: PIT va CSL sinovlari",
         "angle": "Explains how non-destructive testing (PIT and CSL) identifies concrete voids and pile necking before building construction."
