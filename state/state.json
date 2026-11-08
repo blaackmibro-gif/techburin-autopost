@@ -106,6 +106,43 @@
         "video": 24,
         "control": 25
       }
+    },
+    "2026-11-09T09:00": {
+      "slot": "2026-11-09T09:00",
+      "created": "2026-11-08T14:35:55+00:00",
+      "status": "pending",
+      "topic": {
+        "title_uz": "Burg‘ulashda quduq devori to‘kilishi: Kasingmi yoki bentonit?",
+        "angle": "Explains when to use casing pipes versus bentonite mud to stabilize borehole walls based on soil permeability and groundwater level."
+      },
+      "title": "🏗 Burg‘ulashda quduq to‘kilishini qanday to‘xtatish mumkin?",
+      "caption": "<b>🏗 Burg‘ulashda quduq to‘kilishini qanday to‘xtatish mumkin?</b>\n\nBurg‘ulash jarayonida quduq devorining to‘kilishi ishni to‘xtatib, poydevor sifatiga ta’sir qiladi. Devor barqarorligini ta’minlash uchun geologiyaga mos yechim tanlanadi.\n\nBunga e’tibor bering:\n1. Shag‘al va yirik toshli qatlamlarda kasing quvuri qo‘llanadi. U to‘kiluvchan tuproq va yer osti suvlarini mexanik to‘sadi.\n2. Loy va mayda qumli joylarda bentonit eritmasi ishlatiladi. U devorda parda hosil qilib, bosim bilan ushlab turadi.\n3. Bentonit sathi yer osti suvidan kamida 1,0–1,5 metr baland bo‘lishi shart. Aks holda bosim yo‘qolib, devor qulab tushadi.\n\nTo‘g‘ri usulni tanlash geologik qidiruv natijalariga bog‘liq.\n\nPoydevor bo‘yicha savolingiz bormi? Bepul maslahat uchun yozing yoki qo‘ng‘iroq qiling.\n📞 +998 77 235 17 07  |  techburinconstruct.com\n✍️ @invenxfund\n\n#TechburinConstruct #svay #poydevor #qurilish",
+      "audio_script": "Assalomu alaykum! Techburin Construct’dan foydali maslahat. Burg‘ulashda quduq devori to‘kilmasligi uchun tuproq turiga qarab ish tutish kerak. Shag‘al va yirik toshli joylarda kasing quvuridan foydalanilgani ma’qul. U devorni mexanik ushlab turadi. Loy va qumli qatlamlarda esa bentonit eritmasi ish beradi. Muhim qoida: bentonit eritmasi sathi yer osti suvidan kamida bir yoki bir yarim metr yuqori turishi shart. Aks holda bosim yo‘qolib, quduq to‘kilib ketadi. Batafsil — kanalimizdagi postda.",
+      "sources": [],
+      "qa": {
+        "passed": true,
+        "score": 10,
+        "summary_uz": "Post va audio ssenariy barcha qoidalarga to‘liq javob beradi. Texnik me’yorlar manbaga tayangan, audio ssenariydagi raqamlar so‘z bilan yozilgan va foydali maslahat berilgan.",
+        "issues": [],
+        "warnings": [],
+        "rewrites": 0
+      },
+      "voice": {
+        "duration": 33,
+        "model": "eleven_v4",
+        "voice_id": "CwhRBWXzGAHq8TQ4Fs17"
+      },
+      "video": {
+        "duration": 35,
+        "size_kb": 3708
+      },
+      "regen_count": 0,
+      "admin_msgs": {
+        "photo": 26,
+        "voice": 27,
+        "video": 28,
+        "control": 29
+      }
     }
   },
   "history": [
