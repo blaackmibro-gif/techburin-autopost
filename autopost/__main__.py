@@ -9,6 +9,7 @@ from __future__ import annotations
 import html
 import logging
 import sys
+import time
 from urllib.parse import urlparse
 
 from .config import load_config, secret
@@ -61,9 +62,36 @@ def check_updates(tg: Telegram) -> list[str]:
         msgs = sum(1 for u in ups if u.get("message"))
         lines.append(f"ℹ️ Botga kelib turgan: {len(ups)} ta (tugma bosish: {presses}, xabar: {msgs}). "
                      f"Oxirgi o‘qilgan raqam: {state['last_update_id']}")
+        if not ups and not wh.get("url"):
+            lines.append(detect_other_reader(tg, state["last_update_id"] + 1))
     except Exception as e:  # noqa: BLE001
         lines.append(f"⛔ Telegram yangilanishlari: {str(e)[:300]}")
     return lines
+
+
+def detect_other_reader(tg: Telegram, offset: int, seconds: int = 75) -> str:
+    """Shu bot tokeni bilan boshqa dastur ham yangilanishlarni o‘qiyaptimi?
+
+    Telegram bitta botga bir vaqtda faqat bitta o‘quvchiga ruxsat beradi: boshqa dastur o‘qisa,
+    bizning kutib turgan so‘rovimiz «409 terminated by other getUpdates request» bilan uziladi.
+    Yangilanishlar tasdiqlanmaydi (offset o‘zgarmaydi), shuning uchun hech narsa yo‘qolmaydi.
+    """
+    end = time.monotonic() + seconds
+    while time.monotonic() < end:
+        try:
+            ups = tg.call("getUpdates", {"offset": offset, "limit": 1, "timeout": 25,
+                                         "allowed_updates": ["message", "callback_query"]})
+        except Exception as e:  # noqa: BLE001
+            if "409" in str(e) and "other getUpdates" in str(e):
+                return ("⛔ Bot tokeni boshqa dasturda ham ishlatilyapti: tugma bosilishlari va xabarlaringizni "
+                        "o‘sha dastur olib ketyapti, shuning uchun tasdiqlar yetib kelmaydi. Yechim: o‘sha dasturni "
+                        "to‘xtating yoki @BotFather'da /revoke qilib yangi token oling va GitHub Secrets'dagi "
+                        "TELEGRAM_BOT_TOKEN ni yangilang.")
+            return f"⚠️ Ikkinchi o‘quvchini tekshirib bo‘lmadi: {str(e)[:200]}"
+        if ups:
+            return "✅ Tekshiruv paytida botga yangilanish keldi: tugma bosilishlari yetib kelyapti."
+    return (f"✅ {seconds} soniya kuzatildi: boshqa dastur botni o‘qiyotgani sezilmadi. "
+            f"Bu vaqtda bot chatiga /holat yozib ko‘rsangiz, tekshiruv aniqroq bo‘ladi.")
 
 
 def cmd_check(cfg) -> int:
