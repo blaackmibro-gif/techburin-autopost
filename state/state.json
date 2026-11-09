@@ -1,5 +1,5 @@
 {
-  "last_update_id": 191858309,
+  "last_update_id": 191858321,
   "drafts": {
     "2026-11-02T09:00": {
       "slot": "2026-11-02T09:00",
@@ -110,7 +110,7 @@
     "2026-11-09T09:00": {
       "slot": "2026-11-09T09:00",
       "created": "2026-11-08T14:35:55+00:00",
-      "status": "pending",
+      "status": "published",
       "topic": {
         "title_uz": "Burg‘ulashda quduq devori to‘kilishi: Kasingmi yoki bentonit?",
         "angle": "Explains when to use casing pipes versus bentonite mud to stabilize borehole walls based on soil permeability and groundwater level."
@@ -142,7 +142,13 @@
         "voice": 27,
         "video": 28,
         "control": 29
-      }
+      },
+      "published_msgs": {
+        "photo": 82,
+        "voice": 83,
+        "video": 84
+      },
+      "post_link": "https://t.me/techburinconstruct/82"
     }
   },
   "history": [
@@ -150,6 +156,11 @@
       "date": "2026-11-01",
       "title": "🧪 Cho‘kuvchan gruntda qaysi svay ma’qul: qoqishmi yoki burg‘ulash?",
       "slot": "2026-11-02T09:00"
+    },
+    {
+      "date": "2026-11-09",
+      "title": "🏗 Burg‘ulashda quduq to‘kilishini qanday to‘xtatish mumkin?",
+      "slot": "2026-11-09T09:00"
     }
   ],
   "force_generate": false,
