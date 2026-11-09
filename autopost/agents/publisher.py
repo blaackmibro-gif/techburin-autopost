@@ -74,8 +74,69 @@ def control_text(cfg: dict, draft: dict) -> str:
         f"<b>Video:</b> {video_line}\n"
         f"<b>Manbalar:</b>\n{src_lines}\n\n"
         f"{status}\n\n"
-        f"<i>Tugmani bosgandan keyin holat 30 daqiqa ichida yangilanadi.</i>"
+        f"<i>Tugma bosilgani tizimga yetib borgach, alohida «Qabul qilindi» xabari keladi. "
+        f"U kelmasa, bosilish yetib bormagan.</i>"
     )
+
+
+# ---------------------------------------------------------------- adminga alohida xabarlar
+def notify(tg: Telegram, cfg: dict, text: str, buttons_: list[list[dict]] | None = None) -> None:
+    """Adminga yangi xabar (tahrir emas, shuning uchun telefonga bildirishnoma keladi)."""
+    try:
+        tg.send_message(cfg["telegram"]["admin_chat_id"], text, buttons_)
+    except Exception as e:  # noqa: BLE001 — xabar ketmasa ham post jarayoni to‘xtamasin
+        log.warning("Adminga xabar yuborib bo‘lmadi: %s", e)
+
+
+def ack_text(cfg: dict, draft: dict, action: str, title: str, now: datetime) -> str | None:
+    """Tugma bosilishi qabul qilingani haqida xabar. Chiqdi/xato/muddat xabarlari alohida yuboriladi."""
+    t = html.escape(title)
+    got = f"\n<i>Tizim tugmani {now:%H:%M} da qabul qildi.</i>"
+    st = draft["status"]
+    if st in ("published", "failed", "expired"):
+        return None  # publish_due o‘z xabarini yuborgan
+    if action == "approve" and st == "approved":
+        slot = pretty_slot(parse_slot(cfg, draft["slot"]))
+        return f"✅ <b>Tasdiq qabul qilindi</b>\n«{t}»\n<b>{slot}</b> da kanalga chiqadi.{got}"
+    if action == "reject":
+        return f"❌ <b>Bekor qilish qabul qilindi</b>\n«{t}» kanalga chiqmaydi.{got}"
+    if action == "regen":
+        return (f"🔁 <b>Qayta yozish qabul qilindi</b>\n«{t}» o‘rniga yangi qoralama tayyorlanadi "
+                f"va alohida keladi.{got}")
+    return None
+
+
+def published_text(draft: dict) -> str:
+    link = f"\n{draft['post_link']}" if draft.get("post_link") else ""
+    return f"📢 <b>Kanalga chiqdi</b>\n«{html.escape(draft.get('title', ''))}»{link}"
+
+
+def failed_text(draft: dict) -> str:
+    return (f"⛔ <b>Kanalga chiqmadi</b>\n«{html.escape(draft.get('title', ''))}»\n"
+            f"Xato: {html.escape(draft.get('error', ''))}")
+
+
+def expired_text(draft: dict) -> str:
+    return (f"⌛ <b>Post chiqmadi</b>\n«{html.escape(draft.get('title', ''))}» vaqtida tasdiqlanmadi.\n"
+            f"Bugun post kerak bo‘lsa, botga /yangi yozing va qoralama kelgach «🚀 Hozir chiqarish»ni bosing.")
+
+
+def reminder(cfg: dict, draft: dict, now: datetime, deadline: datetime) -> tuple[str, list[list[dict]]]:
+    slot = parse_slot(cfg, draft["slot"])
+    t = html.escape(draft.get("title", ""))
+    sid = draft["slot"]
+    tail = ("\n\nTugmani bosgan bo‘lsangiz-u, baribir shu xabar kelgan bo‘lsa, bosilish botga yetib bormagan. "
+            "Shu yerdagi tugmani qayta bosing.")
+    if now < slot:
+        text = (f"⏰ <b>Qoralama hali tasdiqlanmagan</b>\n«{t}»\n"
+                f"{pretty_slot(slot)} da chiqishi uchun tugmani bosing.{tail}")
+        kb = [[{"text": "✅ Vaqtida chiqarish", "callback_data": f"approve:{sid}"},
+               {"text": "🚀 Hozir chiqarish", "callback_data": f"now:{sid}"}]]
+    else:
+        text = (f"⏰ <b>Post vaqti o‘tdi, lekin tasdiq kelmadi</b>\n«{t}»\n"
+                f"Bugun chiqishi uchun «🚀 Hozir chiqarish»ni bosing (oxirgi muddat {deadline:%H:%M}).{tail}")
+        kb = [[{"text": "🚀 Hozir chiqarish", "callback_data": f"now:{sid}"}]]
+    return text, kb
 
 
 def video_caption(cfg: dict, draft: dict) -> str:
