@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import html
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from .agents import audio as audio_agent
 from .agents import card as card_agent
@@ -17,6 +17,7 @@ log = logging.getLogger(__name__)
 PUBLISH_EARLY_MIN = 10       # post vaqtidan necha daqiqa oldin chiqarishga ruxsat
 MAX_GEN_ERRORS = 3
 MAX_REGENS = 3
+REMIND_BEFORE = timedelta(hours=3)   # tasdiq kelmasa, post vaqtidan qancha oldin eslatish
 DONE = ("published", "rejected", "expired")
 
 
@@ -138,7 +139,7 @@ HELP = ("Men Techburin Construct kanali uchun postlar tayyorlayman.\n\n"
         "/yangi — keyingi post uchun hozir qoralama tayyorlash\n"
         "/holat — navbatdagi postlar holati\n\n"
         "Qoralama tagidagi tugmalar: ✅ vaqtida chiqarish, 🚀 hozir chiqarish, 🔁 qayta yozish, ❌ bekor qilish.\n"
-        "Javoblar 30 daqiqa ichida bajariladi.")
+        "Tugma bosilgani qabul qilinganda alohida «Qabul qilindi» xabari keladi.")
 
 
 def status_text(cfg: dict, state: dict) -> str:
@@ -156,8 +157,12 @@ def status_text(cfg: dict, state: dict) -> str:
     return "\n".join(lines)
 
 
-def process_updates(svc: Services, cfg: dict, state: dict) -> None:
+def process_updates(svc: Services, cfg: dict, state: dict, now=None) -> list[tuple[str, str, str]]:
+    """Tugma va buyruqlarni o‘qiydi. Qabul qilingan tugmalar ro‘yxatini qaytaradi: (slot, action, sarlavha)."""
     tg, admin = svc.tg, int(cfg["telegram"]["admin_chat_id"])
+    now = now or now_local(cfg)
+    late = timedelta(hours=cfg["schedule"].get("late_publish_hours", 6))
+    acks = []
     updates = tg.get_updates(state["last_update_id"] + 1)
     for u in updates:
         state["last_update_id"] = max(state["last_update_id"], u["update_id"])
@@ -175,7 +180,8 @@ def process_updates(svc: Services, cfg: dict, state: dict) -> None:
                 tg.answer_callback(cq["id"], "Bu qoralama allaqachon yakunlangan")
                 continue
             if action == "approve":
-                d["status"] = "approved"
+                # Tizim tugmani kech o‘qigan bo‘lsa (post vaqti o‘tib ketgan), tasdiqni yo‘qotmasdan darhol chiqaramiz
+                d["status"] = "publish_now" if now > parse_slot(cfg, sid) + late else "approved"
             elif action == "now":
                 d["status"] = "publish_now"
             elif action == "regen":
@@ -186,6 +192,7 @@ def process_updates(svc: Services, cfg: dict, state: dict) -> None:
                 continue
             tg.answer_callback(cq["id"], "Qabul qilindi")
             publisher.refresh_control(tg, cfg, d)
+            acks.append((sid, action, d.get("title", "")))
             continue
 
         msg = u.get("message")
@@ -199,6 +206,31 @@ def process_updates(svc: Services, cfg: dict, state: dict) -> None:
             tg.send_message(admin, status_text(cfg, state))
         elif text.startswith("/"):
             tg.send_message(admin, HELP, parse_mode=None)
+    return acks
+
+
+def send_acks(svc: Services, cfg: dict, state: dict, acks, now) -> None:
+    for sid, action, title in acks:
+        d = state["drafts"].get(sid)
+        text = publisher.ack_text(cfg, d, action, title, now) if d else None
+        if text:
+            publisher.notify(svc.tg, cfg, text)
+
+
+def remind_pending(svc: Services, cfg: dict, state: dict, now) -> None:
+    """Tasdiq kelmagan qoralama haqida bir marta eslatadi (tugmalari bilan)."""
+    late = timedelta(hours=cfg["schedule"].get("late_publish_hours", 6))
+    for d in state["drafts"].values():
+        if d["status"] != "pending" or d.get("reminded"):
+            continue
+        slot = parse_slot(cfg, d["slot"])
+        created = datetime.fromisoformat(d["created"]) if d.get("created") else None
+        if created and now - created < timedelta(hours=1):
+            continue  # qoralama endigina keldi
+        if slot - REMIND_BEFORE <= now <= slot + late:
+            text, kb = publisher.reminder(cfg, d, now, slot + late)
+            publisher.notify(svc.tg, cfg, text, kb)
+            d["reminded"] = True
 
 
 # ---------------------------------------------------------------- publishing
@@ -216,13 +248,16 @@ def publish_due(svc: Services, cfg: dict, state: dict, now) -> None:
                 d["status"] = "published"
                 state["history"].append({"date": now.strftime("%Y-%m-%d"), "title": d["title"], "slot": d["slot"]})
                 log.info("Chiqarildi: %s", d["title"])
+                publisher.notify(svc.tg, cfg, publisher.published_text(d))
             except Exception as e:  # noqa: BLE001
                 d["status"], d["error"] = "failed", str(e)[:300]
                 log.error("Chiqarishda xato: %s", e)
+                publisher.notify(svc.tg, cfg, publisher.failed_text(d))
             publisher.refresh_control(svc.tg, cfg, d)
         elif now > slot + late and d["status"] in ("pending", "approved", "auto", "regen_requested"):
             d["status"] = "expired"
             publisher.refresh_control(svc.tg, cfg, d)
+            publisher.notify(svc.tg, cfg, publisher.expired_text(d))
 
 
 def maybe_generate(svc: Services, cfg: dict, state: dict, now) -> None:
@@ -272,7 +307,9 @@ def maybe_generate(svc: Services, cfg: dict, state: dict, now) -> None:
 
 def tick(svc: Services, cfg: dict, state: dict, now=None) -> None:
     now = now or now_local(cfg)
-    process_updates(svc, cfg, state)
+    acks = process_updates(svc, cfg, state, now)
     publish_due(svc, cfg, state, now)
     maybe_generate(svc, cfg, state, now)
     publish_due(svc, cfg, state, now)  # avtomatik rejimda yangi tayyorlangan post vaqti kelgan bo‘lsa
+    send_acks(svc, cfg, state, acks, now)
+    remind_pending(svc, cfg, state, now)
