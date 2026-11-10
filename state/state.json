@@ -1,5 +1,5 @@
 {
-  "last_update_id": 191858321,
+  "last_update_id": 191858322,
   "drafts": {
     "2026-11-02T09:00": {
       "slot": "2026-11-02T09:00",
@@ -149,6 +149,43 @@
         "video": 84
       },
       "post_link": "https://t.me/techburinconstruct/82"
+    },
+    "2026-11-11T09:00": {
+      "slot": "2026-11-11T09:00",
+      "created": "2026-11-10T16:40:17+00:00",
+      "status": "pending",
+      "topic": {
+        "title_uz": "Qishda qoziq poydevor quyish: asosiy qoidalar",
+        "angle": "Gives clear instructions on winter concreting techniques and anti-freeze additives according to building codes."
+      },
+      "title": "❄️ Qishda qoziq poydevor quyish mumkinmi?",
+      "caption": "<b>❄️ Qishda qoziq poydevor quyish mumkinmi?</b>\n\nSovuq mavsumda poydevor quyish maxsus tartibni talab qiladi. Beton muzlab qolsa, mustahkamligini yo‘qotadi va poydevor yaroqsiz holga keladi.\n\nQishki quyishda asosiy qoidalar:\n1. Burg‘ulangan quduq va karkasni qor, muz va muzlagan loydan to‘liq tozalash shart.\n2. Beton aralashmasi harorati joylashtirish vaqtida kamida +5°C bo‘lishi va sovuqqa qarshi qo‘shimchalar qo‘shilishi kerak.\n3. Beton muzlashidan oldin loyiha mustahkamligining 30-50 foizini egallashi lozim. Qoziq ustki qismini issiqlik izolyatsiyasi bilan yopish zarur.\n\nTo‘g‘ri texnologiya qishda ham mustahkam poydevor olish imkonini beradi.\n\nPoydevor bo‘yicha savolingiz bormi? Bepul maslahat uchun yozing yoki qo‘ng‘iroq qiling.\n📞 +998 77 235 17 07  |  techburinconstruct.com\n✍️ @invenxfund\n\n#TechburinConstruct #svay #poydevor #qurilish",
+      "audio_script": "Assalomu alaykum! Techburin Construct’dan foydali maslahat. Qishda qoziq poydevor quyishda beton muzlab qolmasligi shart. Burg‘ulangan quduq va karkas qor hamda muzdan to‘liq tozalanadi. Quyilayotgan beton harorati plyus besh darajadan past bo‘lmasligi va sovuqqa qarshi maxsus qo‘shimchalar ishlatilishi kerak. Beton muzlashidan oldin o‘z mustahkamligining o‘ttizdan ellik foizigacha qismini egallashi lozim. Qoziq usti esa issiq tutuvchi material bilan yopiladi. Batafsil — kanalimizdagi postda.",
+      "sources": [],
+      "qa": {
+        "passed": true,
+        "score": 10,
+        "summary_uz": "Post va audio ssenariy barcha qoidalarga hamda texnik talablarga to‘liq javob beradi. Ma’lumotlar asosli manbalarga tayanib, aniq va tushunarli tilda yoritilgan.",
+        "issues": [],
+        "warnings": [],
+        "rewrites": 0
+      },
+      "voice": {
+        "duration": 33,
+        "model": "eleven_v4",
+        "voice_id": "CwhRBWXzGAHq8TQ4Fs17"
+      },
+      "video": {
+        "duration": 35,
+        "size_kb": 3175
+      },
+      "regen_count": 0,
+      "admin_msgs": {
+        "photo": 38,
+        "voice": 39,
+        "video": 40,
+        "control": 41
+      }
     }
   },
   "history": [
