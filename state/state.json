@@ -1,5 +1,5 @@
 {
-  "last_update_id": 191858322,
+  "last_update_id": 191858332,
   "drafts": {
     "2026-11-02T09:00": {
       "slot": "2026-11-02T09:00",
@@ -153,7 +153,7 @@
     "2026-11-11T09:00": {
       "slot": "2026-11-11T09:00",
       "created": "2026-11-10T16:40:17+00:00",
-      "status": "pending",
+      "status": "published",
       "topic": {
         "title_uz": "Qishda qoziq poydevor quyish: asosiy qoidalar",
         "angle": "Gives clear instructions on winter concreting techniques and anti-freeze additives according to building codes."
@@ -186,7 +186,13 @@
         "video": 40,
         "control": 41
       },
-      "reminded": true
+      "reminded": true,
+      "published_msgs": {
+        "photo": 85,
+        "voice": 86,
+        "video": 87
+      },
+      "post_link": "https://t.me/techburinconstruct/85"
     }
   },
   "history": [
@@ -199,6 +205,11 @@
       "date": "2026-11-09",
       "title": "🏗 Burg‘ulashda quduq to‘kilishini qanday to‘xtatish mumkin?",
       "slot": "2026-11-09T09:00"
+    },
+    {
+      "date": "2026-11-11",
+      "title": "❄️ Qishda qoziq poydevor quyish mumkinmi?",
+      "slot": "2026-11-11T09:00"
     }
   ],
   "force_generate": false,
