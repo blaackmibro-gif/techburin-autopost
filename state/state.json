@@ -185,7 +185,8 @@
         "voice": 39,
         "video": 40,
         "control": 41
-      }
+      },
+      "reminded": true
     }
   },
   "history": [
