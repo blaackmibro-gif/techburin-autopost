@@ -193,6 +193,43 @@
         "video": 87
       },
       "post_link": "https://t.me/techburinconstruct/85"
+    },
+    "2026-11-13T09:00": {
+      "slot": "2026-11-13T09:00",
+      "created": "2026-11-12T17:11:02+00:00",
+      "status": "pending",
+      "topic": {
+        "title_uz": "Qoziqlarni statik sinash: Nega uni o‘tkazib bo‘lmaydi?",
+        "angle": "Explains why performing static load tests on trial piles as required by ShNQ prevents over-design and unpredicted structural settlement."
+      },
+      "title": "🧪 Qoziqlarni statik sinash nega shart?",
+      "caption": "<b>🧪 Qoziqlarni statik sinash nega shart?</b>\n\nPoydevor barpo etishda statik sinovni o‘tkazmaslik kutilmagan cho‘kishlarga olib keladi. ShNQ me’yorlariga muvofiq tajriba qoziqlarini sinash — poydevor mustahkamligining asosiy omilidir.\n\nAsosiy sabablar:\n1. Geologik hisoblar tuproqning haqiqiy holatini to‘liq berolmaydi. Sinov qoziqning amaldagi ko‘tarish qobiliyatini ko‘rsatadi.\n2. Ommaviy ishlar boshlanishidan oldin o‘tkazilgan sinov qoziq o‘lchamlarini to‘g‘ri tanlashga yordam beradi.\n3. Statik sinovsiz loyihachilar zaxirani oshirishga majbur bo‘ladi, bu esa ortiqcha beton va armatura sarfiga olib keladi.\n\nSinovni o‘z vaqtida o‘tkazish poydevor ishonchliligi va tejamkorligini ta’minlaydi.\n\nPoydevor bo‘yicha savolingiz bormi? Bepul maslahat uchun yozing yoki qo‘ng‘iroq qiling.\n📞 +998 77 235 17 07  |  techburinconstruct.com\n✍️ @invenxfund\n\n#TechburinConstruct #svay #poydevor #qurilish",
+      "audio_script": "Assalomu alaykum! Techburin Construct’dan foydali maslahat. Poydevor qurilishida qoziqlarni statik sinashni o‘tkazib yubormang. ShNQ me’yorlariga ko‘ra tajriba qoziqlarini sinash bino cho‘kishining oldini oladi. Geologik hisob-kitoblar tuproq holatini har doim ham to‘liq ko‘rsatmaydi. Sinov orqali qoziqning haqiqiy ko‘tarish qobiliyati aniqlanadi hamda ortiqcha beton va armatura sarfi tejaladi. Batafsil — kanalimizdagi postda.",
+      "sources": [],
+      "qa": {
+        "passed": true,
+        "score": 10,
+        "summary_uz": "Post va audio ssenariy barcha qoidalarga hamda biriktirilgan manba ma'lumotlariga to'liq mos keladi. Matn texnik jihatdan aniq va ekspert uslubida sodda tushuntirilgan.",
+        "issues": [],
+        "warnings": [],
+        "rewrites": 0
+      },
+      "voice": {
+        "duration": 29,
+        "model": "eleven_v4",
+        "voice_id": "CwhRBWXzGAHq8TQ4Fs17"
+      },
+      "video": {
+        "duration": 31,
+        "size_kb": 2785
+      },
+      "regen_count": 0,
+      "admin_msgs": {
+        "photo": 46,
+        "voice": 47,
+        "video": 48,
+        "control": 49
+      }
     }
   },
   "history": [
