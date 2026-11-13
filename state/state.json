@@ -229,7 +229,8 @@
         "voice": 47,
         "video": 48,
         "control": 49
-      }
+      },
+      "reminded": true
     }
   },
   "history": [
