@@ -197,7 +197,7 @@
     "2026-11-13T09:00": {
       "slot": "2026-11-13T09:00",
       "created": "2026-11-12T17:11:02+00:00",
-      "status": "pending",
+      "status": "expired",
       "topic": {
         "title_uz": "Qoziqlarni statik sinash: Nega uni o‘tkazib bo‘lmaydi?",
         "angle": "Explains why performing static load tests on trial piles as required by ShNQ prevents over-design and unpredicted structural settlement."
